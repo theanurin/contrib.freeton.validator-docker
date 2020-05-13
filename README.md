@@ -1,4 +1,4 @@
-# Free TON Master Node
+# Free TON Validator
 TON (Telegram Open Network) use the principle «Proof of Stake». This requires the use of masternodes. Third-party developers (validators) are owners of Masternodes.
 
 This image was make especially for launch [Free TON Network](https://freeton.org/).
