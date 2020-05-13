@@ -23,41 +23,61 @@ if [ -d /etc/ton ] && [ -d /var/ton ] && etcfiles=$(ls -1AL -- /etc/ton) && data
 	umask 0027
 
 	# Setup /etc/ton/global.config.json
+	DEFAULT_GLOBAL_CONFIG_TEMPLATE="freeton-testnet"
 	while true; do
 		echo
 		echo "Please select template of global.config.json. See section 'Global configuration of the TON Blockchain' of the https://test.ton.org/FullNode-HOWTO.txt"
 		echo
 		for GLOBAL_CONFIG_TEMPLATE in $(ls -1 /usr/local/share/ton); do
-			echo "	${GLOBAL_CONFIG_TEMPLATE}"
+			echo -n "	"
+			echo "${GLOBAL_CONFIG_TEMPLATE}" | sed "s/-global.config.json//g"
 		done
 		unset GLOBAL_CONFIG_TEMPLATE
 		echo
-		read -p "Enter template file name: " GLOBAL_CONFIG_TEMPLATE
-		if [ -f "/usr/local/share/ton/${GLOBAL_CONFIG_TEMPLATE}" ]; then
-			break;
+		read -p "Enter template file name [${DEFAULT_GLOBAL_CONFIG_TEMPLATE}]: " GLOBAL_CONFIG_TEMPLATE
+		if [ -z "${GLOBAL_CONFIG_TEMPLATE}" ]; then
+			GLOBAL_CONFIG_TEMPLATE="${DEFAULT_GLOBAL_CONFIG_TEMPLATE}"
+		fi
+		if [ -f "/usr/local/share/ton/${GLOBAL_CONFIG_TEMPLATE}-global.config.json" ]; then
+			break
 		fi
 	done
-	echo "	/usr/local/share/ton/${GLOBAL_CONFIG_TEMPLATE} -> /etc/ton/global.config.json"
-	cp "/usr/local/share/ton/${GLOBAL_CONFIG_TEMPLATE}" /etc/ton/global.config.json
+	unset DEFAULT_GLOBAL_CONFIG_TEMPLATE
+	echo "	/usr/local/share/ton/${GLOBAL_CONFIG_TEMPLATE}-global.config.json -> /etc/ton/global.config.json"
+	cp "/usr/local/share/ton/${GLOBAL_CONFIG_TEMPLATE}-global.config.json" /etc/ton/global.config.json
 	unset GLOBAL_CONFIG_TEMPLATE
 
 	# Public IP
+	set +e
+	DEFAULT_INTERNET_EXPOSE_IP=$(curl ifconfig.me 2>/dev/null)
+	set -e
 	while true; do
 		echo
-		read -p "Enter your external IPv4 address for this TON node (like 1.2.3.4): " INTERNET_EXPOSE_IP
+		read -p "Enter your external IPv4 address for this TON node [${DEFAULT_INTERNET_EXPOSE_IP}]: " INTERNET_EXPOSE_IP
+		if [ -z "${INTERNET_EXPOSE_IP}" ]; then
+			INTERNET_EXPOSE_IP="${DEFAULT_INTERNET_EXPOSE_IP}"
+			break
+		fi
 		if ipcalc -ms "${INTERNET_EXPOSE_IP}" >/dev/null; then
 			break
 		fi
 	done
+	unset DEFAULT_INTERNET_EXPOSE_IP
 
 	# Choose ADNL_PORT
+	DEFAULT_ADNL_PORT="30310"
 	while true; do
 		echo
-		read -p "Enter ADNL port (like 30310): " ADNL_PORT
+		read -p "Enter ADNL port [${DEFAULT_ADNL_PORT}]: " ADNL_PORT
+		if [ -z "${ADNL_PORT}" ]; then
+			ADNL_PORT="${DEFAULT_ADNL_PORT}"
+			break
+		fi
 		if expr "${ADNL_PORT}" : '[1-9][0-9]*$' >/dev/null; then
 			break
 		fi
 	done
+	unset DEFAULT_ADNL_PORT
 
 	echo
 	echo "Launching validator-engine to generate instance configuration..."
@@ -101,10 +121,13 @@ if [ -d /etc/ton ] && [ -d /var/ton ] && etcfiles=$(ls -1AL -- /etc/ton) && data
 			}
 		}
 	}' "/etc/ton/keys/keys_s" "/etc/ton/keys/keys_c" "/etc/ton/keys/keys_l" "/var/ton/config.json" > "/var/ton/config.json.tmp"
+	mv "/var/ton/config.json" "/var/ton/config.json.bak"
 	mv "/var/ton/config.json.tmp" "/var/ton/config.json"
 
 	chown root:ton -R /etc/ton
 	chown -R ton /var/ton
 fi
 
+echo
+echo "Starting Validator Engine..."
 exec /usr/local/bin/validator-engine --db /var/ton --global-config /etc/ton/global.config.json --user ton

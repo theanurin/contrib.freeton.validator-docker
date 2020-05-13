@@ -1,3 +1,6 @@
+[![docker image badge](https://images.microbadger.com/badges/image/cexiolabs/freeton-validator.svg)](https://hub.docker.com/r/cexiolabs/freeton-validator)
+[![ton commit badge](https://images.microbadger.com/badges/commit/cexiolabs/freeton-validator.svg)](https://github.com/ton-blockchain/ton)
+
 # Free TON Validator
 TON (Telegram Open Network) use the principle «Proof of Stake». This requires the use of masternodes. Third-party developers (validators) are owners of Masternodes.
 
@@ -47,7 +50,33 @@ of Decentralization](https://freeton.org/dod)
 
 	Expected result:
 	```
+	Directories /etc/ton and /var/ton are empty. Looks like this is a first launch. Entering setup mode...
 
+	Please select template of global.config.json. See section 'Global configuration of the TON Blockchain' of the https://test.ton.org/FullNode-HOWTO.txt
+
+			freeton-devnet
+			freeton-mainnet
+			freeton-testnet
+
+	Enter template file name [freeton-testnet]: 
+			/usr/local/share/ton/freeton-testnet-global.config.json -> /etc/ton/global.config.json
+
+	Enter your external IPv4 address for this TON node [94.154.221.168]: 
+
+	Enter ADNL port [30310]: 
+
+	Launching validator-engine to generate instance configuration...
+	[ 3][t 1][1589413681.457912922][validator-engine.cpp:1160][!validator-engine]   no init block in config. using zero state
+	[ 1][t 1][1589413681.465116262][validator-engine.cpp:1445][!validator-engine]   created config file '/var/ton/config.json'
+	[ 1][t 1][1589413681.465180159][validator-engine.cpp:1446][!validator-engine]   check it manually before continue
+
+	Generating keys for server, liteserver and client(validator-engine-console)...
+
+	Starting Validator Engine...
+	[ 3][t 1][1589413681.505045414][validator-engine.cpp:1160][!validator-engine]   no init block in config. using zero state
+	[ 3][t 1][1589413681.536607504][manager.cpp:1429][!manager]     failed to load blocks from import dir: [PosixError : No such file or directory : 2 : File "/var/ton/import" can't be opened for reading]
+	[ 3][t 4][1589413681.584379911][manager-init.cpp:35][!reiniter] init_block_id=[ w=-1 s=9223372036854775808 seq=0 ...
+	...
 	```
 
 ## What the image includes
@@ -58,7 +87,20 @@ of Decentralization](https://freeton.org/dod)
 * Simple setup shell script.
 
 ```
-
+/
+├── BANNER
+└── usr
+    └── local
+        ├── bin
+        │   ├── docker-entrypoint.sh
+        │   ├── generate-random-id
+        │   ├── validator-engine
+        │   └── validator-engine-console
+        └── share
+            └── ton
+                ├── freeton-devnet-global.config.json
+                ├── freeton-mainnet-global.config.json
+                └── freeton-testnet-global.config.json
 ```
 
 ## Advanced usage
@@ -70,6 +112,13 @@ It is possible to improve node perfomance if you build an image for your CPU (in
 ```bash
 docker build --tag cexiolabs/freeton-validator --build-arg TON_ARCH=native --file docker/alpine/Dockerfile .
 ```
+
+Build variables (pass as --build-arg):
+| Variable       | Default value | Description          |
+|----------------|---------------|----------------------|
+| TON_ARCH       | x86-64        | See [GCC Options](https://gcc.gnu.org/onlinedocs/gcc-9.2.0/gcc/x86-Options.html#x86-Options) for `cpu-type` |
+| BUILD_THREADS  | 2             | Positive integer           |
+| BUILD_TYPE     | Release       | `Release` or `RelWithDebInfo`. See [notes](https://github.com/ton-blockchain/ton/blob/eecf05ca5934c8c65c8113237fa4a00adcfea697/doc/FullNode-HOWTO) for -DCMAKE_BUILD_TYPE |
 
 ### Use utils
 
