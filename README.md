@@ -28,13 +28,12 @@ of Decentralization](https://freeton.org/dod)
 1. Fetch latest version of the image
 
 	```bash
-	docker fetch cexiolabs/freeton-validator
+	docker pull cexiolabs/freeton-validator
 	```
 
 1. Start a container
 
 	```bash
-	docker fetch cexiolabs/freeton-validator
 	docker run --interactive --tty --network host --mount "source=/ton/etc,target=/etc/ton" --mount "source=/ton/db,target=/var/ton" cexiolabs/freeton-validator
 	```
 
