@@ -11,6 +11,7 @@ of Decentralization](https://freeton.org/dod)
 * [Join the Contest channel](https://t.me/ton_contests)
 * [TON Live explorer](https://ton.live/main)
 * [TON Full Node HOWTO](https://test.ton.org/FullNode-HOWTO.txt)
+* [Image Maintaner Support channel](https://t.me/cexiolabs)
 
 ## Quick Start
 
