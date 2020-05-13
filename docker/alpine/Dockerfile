@@ -1,25 +1,55 @@
-FROM alpine:3.11.6
-ARG TON_GITHUB_REPO="https://github.com/ton-blockchain/ton.git"
-ARG TON_GITHUB_REF="eecf05ca5934c8c65c8113237fa4a00adcfea697"
-WORKDIR /build
-RUN apk add --no-cache git
-RUN git clone --recursive "${TON_GITHUB_REPO}" ton-blockchain && cd ton-blockchain && git checkout "${TON_GITHUB_REF}"
-COPY patches ./patches/
-RUN cd ton-blockchain && find /build/patches -name '*.patch' -exec git apply {} \;
-RUN apk add --no-cache cmake g++ gcc git linux-headers ninja openssl-dev zlib-dev
+ARG ALPINE_VERSION=3.11.6
+FROM alpine:${ALPINE_VERSION} AS builder
 
+# Install dependencies and tools
+RUN apk add --no-cache \
+	cmake=3.15.5-r0 \
+	g++=9.2.0-r4 \
+	gcc=9.2.0-r4 \
+	git=2.24.3-r0 \
+	linux-headers=4.19.36-r0 \
+	ninja=1.9.0-r3 \
+	openssl-dev=1.1.1g-r0 \
+	zlib-dev=1.2.11-r3
+
+# Declare build time arguments
+#
+ARG TON_GITHUB_REPO="https://github.com/ton-blockchain/ton.git"
+#
+ARG TON_GITHUB_REF="eecf05ca5934c8c65c8113237fa4a00adcfea697"
+#
 # https://gcc.gnu.org/onlinedocs/gcc-9.2.0/gcc/x86-Options.html#x86-Options
-ARG TON_ARCH=native
+ARG TON_ARCH=x86-64
+#ARG TON_ARCH=native
 #ARG TON_ARCH=corei7-avx
 
-RUN mkdir ton-blockchain/build && cd ton-blockchain/build \
-&& cmake .. -G "Ninja" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DPORTABLE=ON -DTON_ARCH="${TON_ARCH}"
-RUN cd ton-blockchain/build && ninja -j 1
+WORKDIR /builder
 
-COPY support/mainnet                 /etc/ton.mainnet.example
-COPY support/testnet                 /etc/ton.testnet.example
-COPY support/BANNER                  /
-COPY support/docker-entrypoint.sh    /usr/local/bin/
+RUN git clone --recursive "${TON_GITHUB_REPO}" src
+RUN cd src && git checkout "${TON_GITHUB_REF}"
 
+COPY patches/ patches/
+RUN cd src && find ../patches -name '*.patch' -exec git apply {} \;
+
+RUN mkdir build
+RUN cd build && cmake ../src -G "Ninja" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DPORTABLE=ON -DTON_ARCH="${TON_ARCH}"
+RUN cd build && ninja -j 1
+
+RUN mkdir -p root/usr/local/bin/
+
+COPY support/share/                  root/usr/local/share/ton/
+COPY support/BANNER                  root/
+#COPY support/docker-entrypoint.sh    root/usr/local/bin/
+
+RUN cp build/validator-engine/validator-engine                 root/usr/local/bin/
+RUN cp build/validator-engine-console/validator-engine-console root/usr/local/bin/
+RUN cp build/utils/generate-random-id                          root/usr/local/bin/
+
+
+FROM alpine:${ALPINE_VERSION}
 VOLUME [ "/etc/ton", "/var/ton" ]
+RUN apk add --no-cache libstdc++ && adduser -D -h /var/ton ton
+COPY --from=builder /builder/root/ /
+COPY support/docker-entrypoint.sh    /usr/local/bin/
 ENTRYPOINT [ "/usr/local/bin/docker-entrypoint.sh" ]
+CMD ["validator-engine"]
