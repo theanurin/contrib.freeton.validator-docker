@@ -1,14 +1,14 @@
-[![Docker Build Status](https://img.shields.io/docker/build/cexiolabs/freeton-validator?label=Build%20Status)](https://hub.docker.com/r/cexiolabs/freeton-validator/builds)
-[![Docker Image Size (latest by date)](https://img.shields.io/docker/image-size/cexiolabs/freeton-validator?label=Image%20Size)](https://hub.docker.com/r/cexiolabs/freeton-validator/tags)
-![Docker Pulls](https://img.shields.io/docker/pulls/cexiolabs/freeton-validator?label=Pulls)
+[![Docker Build Status](https://img.shields.io/docker/build/cexiolabs/freeton-validator?label=Status)](https://hub.docker.com/r/cexiolabs/freeton-validator/builds)
+[![Docker Image Size (latest by date)](https://img.shields.io/docker/image-size/cexiolabs/freeton-validator?label=Size)](https://hub.docker.com/r/cexiolabs/freeton-validator/tags)
+[![Docker Pulls](https://img.shields.io/docker/pulls/cexiolabs/freeton-validator?label=Pulls)](https://hub.docker.com/r/cexiolabs/freeton-validator)
 [![Docker Image Version (latest by date)](https://img.shields.io/docker/v/cexiolabs/freeton-validator?sort=semver&label=Version)](https://hub.docker.com/r/cexiolabs/freeton-validator/tags)
-[![Docker Image Info](https://images.microbadger.com/badges/image/cexiolabs/freeton-validator.svg)](https://hub.docker.com/r/cexiolabs/freeton-validator)
+[![Docker Image Info](https://images.microbadger.com/badges/image/cexiolabs/freeton-validator.svg)](https://hub.docker.com/r/cexiolabs/freeton-validator/dockerfile)
 [![Ton Blockchain Commit Ref](https://images.microbadger.com/badges/commit/cexiolabs/freeton-validator.svg)](https://github.com/ton-blockchain/ton)
 
 # Free TON Validator
 TON (Telegram Open Network) use the principle «Proof of Stake». This requires the use of masternodes. Third-party developers (validators) are owners of Masternodes.
 
-This image was make especially for launch [Free TON Network](https://freeton.org/).
+This image was made especially for launch [Free TON Network](https://freeton.org/).
 
 ## Quick Reference
 * [Free TON Community](https://freeton.org/)
@@ -38,12 +38,12 @@ of Decentralization](https://freeton.org/dod)
 1. Start a container
 
 	```bash
-	docker run --interactive --tty --network host --mount "source=/ton/etc,target=/etc/ton" --mount "source=/ton/db,target=/var/ton" cexiolabs/freeton-validator
+	docker run --name freeton-validator --interactive --tty --network host --mount type=bind,source=/ton/etc,target=/etc/ton --mount type=bind,source=/ton/db,target=/var/ton cexiolabs/freeton-validator
 	```
 
 	On first launch the container will enter into setup mode, due your directories `/ton/etc` and `/ton/db` are empty. Let answer for a few questions:
 
-	* Choose template of global.config.json
+	* Choose template of global.config.json  (NOTE! devnet is die yet)
 	* Enter your public IP address (v4 only right now)
 	* Enter ADNL port
 
@@ -82,6 +82,23 @@ of Decentralization](https://freeton.org/dod)
 	...
 	```
 
+1. Check status
+
+	NOTE: Validator Engine need some time to start synchronization. Be patient :)
+
+	```bash
+	docker exec --interactive --tty freeton-validator validator-engine-console --address 127.0.0.1:3030 --key /etc/ton/keys/client --pub /etc/ton/keys/server.pub -c "getstats" -c "quit"
+	```
+
+	Expected result:
+	```
+	connecting to [127.0.0.1:3030]
+	local key: C4BD31198D39F6214A6505BC00BC6192158256C91F172B44BEFBF0299E74C7E4
+	remote key: 2A10CE7EE52139109E186F9588851CCA3FED05F7A574EBD7E7AB49D62DF56863
+	conn ready
+	unixtime			1589469708
+	```
+
 ## What the image includes
 
 * Patches for [ton-blockchain/ton](https://github.com/ton-blockchain/ton) sources that uses inside TON Labs [build scripts](https://github.com/tonlabs/main.ton.dev/tree/master/patches).
@@ -113,6 +130,8 @@ of Decentralization](https://freeton.org/dod)
 It is possible to improve node perfomance if you build an image for your CPU (instead `x86-64`) by providing TON_ARCH build argument. See [GCC Options](https://gcc.gnu.org/onlinedocs/gcc-9.2.0/gcc/x86-Options.html#x86-Options) and choose correct one value `cpu-type`. If you hard to determine correct `cpu-type` just use `native`.
 
 ```bash
+git clone https://github.com/cexiolabs/contrib.freeton.validator-docker.git freeton-validator-docker
+cd freeton-validator-docker
 docker build --tag cexiolabs/freeton-validator --build-arg TON_ARCH=native --file docker/alpine/Dockerfile .
 ```
 
