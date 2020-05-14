@@ -1,5 +1,9 @@
-[![docker image badge](https://images.microbadger.com/badges/image/cexiolabs/freeton-validator.svg)](https://hub.docker.com/r/cexiolabs/freeton-validator)
-[![ton commit badge](https://images.microbadger.com/badges/commit/cexiolabs/freeton-validator.svg)](https://github.com/ton-blockchain/ton)
+[![Docker Build Status](https://img.shields.io/docker/build/cexiolabs/freeton-validator?label=Build%20Status)](https://hub.docker.com/r/cexiolabs/freeton-validator/builds)
+[![Docker Image Size (latest by date)](https://img.shields.io/docker/image-size/cexiolabs/freeton-validator?label=Image%20Size)](https://hub.docker.com/r/cexiolabs/freeton-validator/tags)
+![Docker Pulls](https://img.shields.io/docker/pulls/cexiolabs/freeton-validator?label=Pulls)
+[![Docker Image Version (latest by date)](https://img.shields.io/docker/v/cexiolabs/freeton-validator?sort=semver&label=Version)](https://hub.docker.com/r/cexiolabs/freeton-validator/tags)
+[![Docker Image Info](https://images.microbadger.com/badges/image/cexiolabs/freeton-validator.svg)](https://hub.docker.com/r/cexiolabs/freeton-validator)
+[![Ton Blockchain Commit Ref](https://images.microbadger.com/badges/commit/cexiolabs/freeton-validator.svg)](https://github.com/ton-blockchain/ton)
 
 # Free TON Validator
 TON (Telegram Open Network) use the principle «Proof of Stake». This requires the use of masternodes. Third-party developers (validators) are owners of Masternodes.
@@ -60,7 +64,7 @@ of Decentralization](https://freeton.org/dod)
 	Enter template file name [freeton-testnet]: 
 			/usr/local/share/ton/freeton-testnet-global.config.json -> /etc/ton/global.config.json
 
-	Enter your external IPv4 address for this TON node [94.154.221.168]: 
+	Enter your external IPv4 address for this TON node [X.X.X.X]: 
 
 	Enter ADNL port [30310]: 
 
@@ -113,6 +117,7 @@ docker build --tag cexiolabs/freeton-validator --build-arg TON_ARCH=native --fil
 ```
 
 Build variables (pass as --build-arg):
+
 | Variable       | Default value | Description          |
 |----------------|---------------|----------------------|
 | TON_ARCH       | x86-64        | See [GCC Options](https://gcc.gnu.org/onlinedocs/gcc-9.2.0/gcc/x86-Options.html#x86-Options) for `cpu-type` |
@@ -123,5 +128,5 @@ Build variables (pass as --build-arg):
 
 The image includes [ton-blockchain/ton](https://github.com/ton-blockchain/ton) utils like `generate-random-id`. You may use it just pass as arguments, like:
 ``` bash
-docker run cexiolabs/freeton-validator generate-random-id --mode keys
+docker run --rm cexiolabs/freeton-validator generate-random-id --mode keys
 ```
