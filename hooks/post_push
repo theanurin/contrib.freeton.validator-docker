@@ -1,0 +1,11 @@
+#!/bin/bash
+#
+
+case "${DOCKER_TAG}" in
+	alpine)
+		docker tag "$IMAGE_NAME" "$DOCKER_REPO:$SOURCE_BRANCH-alpine"
+		docker push "$DOCKER_REPO:$SOURCE_BRANCH-alpine"
+		;;
+	*)
+		;;
+esac
